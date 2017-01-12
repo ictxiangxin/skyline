@@ -66,6 +66,3 @@ class File:
 
     def alive(self):
         return self.__file_pointer is not None
-
-f = File('a.txt', 'w')
-f.write('hello')
