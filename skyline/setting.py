@@ -11,6 +11,8 @@ configure = GlobalConfigure(
                 'driver_redis': {
                     'host': 'localhost',
                     'port': 6379,
+                },
+                'driver_file': {
                     'encoding': 'utf-8',
                 }
             }

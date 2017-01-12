@@ -6,20 +6,14 @@ configure = configure.dal.driver.driver_redis
 
 
 class Redis:
-    def __init__(self, host: str=None, port: int=None, password: str=None):
-        self.__host = host
-        self.__port = port
-        self.__password = password
+    def __init__(self, host: str=None, port: int=configure.port, password: str=None):
         self.__connection_pool = None
         self.__redis_handle = None
-        self.__kwargs = {}
+        self.__kwargs = {'host': host, 'port': port, 'password': password}
         self._default_connect()
 
     def __del__(self):
-        if self.__connection_pool is not None:
-            self.__connection_pool.disconnect()
-            self.__connection_pool = None
-            self.__redis_handle = None
+        self.close()
 
     def __getattr__(self, item):
         def null(*args, **kwargs):
@@ -27,35 +21,34 @@ class Redis:
         if self.__redis_handle is None:
             self._default_connect()
         if self.__redis_handle is not None:
-            redis_method = getattr(self.__redis_handle, item)
-            if redis_method is not None:
-                return log.guard(redis_method)
+            try:
+                redis_method = getattr(self.__redis_handle, item)
+                if redis_method is not None:
+                    return self.guard(redis_method)
+            except AttributeError:
+                log.warning('Redis has no such method: {}'.format(item))
+                return null
         else:
+            log.warning('Redis has not connected')
             return null
 
+    def guard(self, function):
+        def _guard(*args, **kwargs):
+            try:
+                function_return = log.watch(function)(*args, **kwargs)
+            except:
+                self.close()
+                function_return = None
+            return function_return
+        return _guard
+
+    @log.guard
     def _default_connect(self):
-        default_connect_arguments = {}
-        if self.__host is not None:
-            default_connect_arguments['host'] = self.__host
-        if self.__port is not None:
-            default_connect_arguments['port'] = self.__port
-        if self.__password is not None:
-            default_connect_arguments['password'] = self.__password
-        if default_connect_arguments:
-            default_connect_arguments.update(self.__kwargs)
-            self.connect(**default_connect_arguments)
+        if self.__kwargs.get('host', None) is not None:
+            self.connect(**self.__kwargs)
 
     @log.guard
     def connect(self, **kwargs: dict):
-        if 'host' in kwargs:
-            self.__host = kwargs['host']
-            del kwargs['host']
-        if 'port' in kwargs:
-            self.__port = kwargs['port']
-            del kwargs['port']
-        if 'password' in kwargs:
-            self.__password = kwargs['password']
-            del kwargs['password']
         self.__kwargs = kwargs
         try:
             self.__connection_pool = redis.ConnectionPool(**kwargs)
@@ -63,6 +56,15 @@ class Redis:
             self.__redis_handle.client_getname()
         except redis.ConnectionError:
             log.exception()
+            self.__connection_pool = None
+            self.__redis_handle = None
+
+    @log.guard
+    def close(self):
+        try:
+            if self.__connection_pool is not None:
+                self.__connection_pool.disconnect()
+        finally:
             self.__connection_pool = None
             self.__redis_handle = None
 
