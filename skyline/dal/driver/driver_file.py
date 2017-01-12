@@ -21,7 +21,7 @@ class File:
         if self.__file_pointer is not None:
             try:
                 file_method = getattr(self.__file_pointer, item)
-                if file_method is not None:
+                if callable(file_method):
                     return self.guard(file_method)
             except AttributeError:
                 log.warning('File has no such method: {}'.format(item))

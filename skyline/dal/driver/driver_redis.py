@@ -23,7 +23,7 @@ class Redis:
         if self.__redis_handle is not None:
             try:
                 redis_method = getattr(self.__redis_handle, item)
-                if redis_method is not None:
+                if callable(redis_method):
                     return self.guard(redis_method)
             except AttributeError:
                 log.warning('Redis has no such method: {}'.format(item))
