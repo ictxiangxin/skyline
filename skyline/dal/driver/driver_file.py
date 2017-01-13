@@ -7,7 +7,7 @@ configure = configure.dal.driver.driver_file
 class File:
     def __init__(self, file: str=None, mode: str=None, encoding: str=configure.encoding):
         self.__file_pointer = None
-        self.__kwargs = {'file': file, 'mode': mode, 'encoding': encoding}
+        self.__arguments = {'file': file, 'mode': mode, 'encoding': encoding}
         self._default_open()
 
     def __del__(self):
@@ -42,15 +42,15 @@ class File:
 
     @log.guard
     def _default_open(self):
-        if None not in (self.__kwargs.get('file', None), self.__kwargs.get('mode', None), self.__kwargs.get('encoding', None)):
-            self.open(**self.__kwargs)
+        if None not in (self.__arguments.get('file', None), self.__arguments.get('mode', None), self.__arguments.get('encoding', None)):
+            self.open(**self.__arguments)
 
     @log.guard
     def open(self, file: str=None, mode: str=None, encoding: str=configure.encoding, **kwargs):
         kwargs['file'] = file
         kwargs['mode'] = mode
         kwargs['encoding'] = encoding
-        self.__kwargs = kwargs
+        self.__arguments = kwargs
         self.__file_pointer = open(**kwargs)
 
     @log.guard

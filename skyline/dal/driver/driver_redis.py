@@ -9,7 +9,7 @@ class Redis:
     def __init__(self, host: str=None, port: int=configure.port, password: str=None):
         self.__connection_pool = None
         self.__redis_handle = None
-        self.__kwargs = {'host': host, 'port': port, 'password': password}
+        self.__arguments = {'host': host, 'port': port, 'password': password}
         self._default_connect()
 
     def __del__(self):
@@ -44,12 +44,12 @@ class Redis:
 
     @log.guard
     def _default_connect(self):
-        if self.__kwargs.get('host', None) is not None:
-            self.connect(**self.__kwargs)
+        if self.__arguments.get('host', None) is not None:
+            self.connect(**self.__arguments)
 
     @log.guard
-    def connect(self, **kwargs: dict):
-        self.__kwargs = kwargs
+    def connect(self, **kwargs):
+        self.__arguments = kwargs
         try:
             self.__connection_pool = redis.ConnectionPool(**kwargs)
             self.__redis_handle = redis.Redis(connection_pool=self.__connection_pool)
