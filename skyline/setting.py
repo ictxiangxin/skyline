@@ -15,6 +15,16 @@ configure = GlobalConfigure(
                 'driver_file': {
                     'encoding': 'utf-8',
                 }
+            },
+            'model': {
+                'linear': {
+                    'abstract': {
+                        'file': {
+                            'append': True,
+                            'encoding': 'utf-8',
+                        }
+                    }
+                }
             }
         }
     }
