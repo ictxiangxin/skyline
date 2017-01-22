@@ -40,7 +40,6 @@ class File:
             return function_return
         return _guard
 
-    @log.guard
     def _default_open(self):
         if None not in (self.__arguments.get('file', None), self.__arguments.get('mode', None), self.__arguments.get('encoding', None)):
             self.open(**self.__arguments)
